@@ -1,5 +1,92 @@
 from collections import defaultdict, deque
+import math
+import warnings
 
+
+def SimpleLinearSearch(iterable: list[str | int] | tuple[str | int], target: str | int) -> int | None:
+    len_iterable = len(iterable)
+    for i in range(len_iterable):
+        if target == iterable[i]:
+            return i
+    return None
+
+def SentinelLinearSearch(iterable: list[str | int], target: str | int):
+    len_iterable = len(iterable)
+    iterable.append(target) # adding the sentinel value
+
+    for i in range(len_iterable): # then looping through the new list
+        if target == iterable[i]: # if target is found, then
+            if i == len_iterable: # check if the target value is the sentinel value
+                return None # if so return None
+            return i # else we return the index value
+    return None # if the loop ends, tha target is not found and return None
+
+
+def SelfOrganizingSearch(iterable: list[str | int], target: str | int, method: str="mtf") -> tuple[int, list] | tuple[None, list]:
+    iterable = iterable.copy()
+    method = method.lower()
+
+    if not isinstance(method, str) or method not in ('mtf', 'transpose'):
+        warnings.warn(f"Invalid method '{method}'. Choose either 'mtf' or 'transpose'.")
+        return None, iterable
+
+    if not isinstance(iterable, list):
+        warnings.warn(f"Iterable requires a list but provided {type(list).__name__}")
+        return None, iterable
+
+    if len(iterable) == 0:        # If no elements in list, no need of searching
+        return None, iterable
+
+    target_index = None   # To store the target index if found
+
+    for i in range(len(iterable)):  # We are searching through the entire list for the target using linear search
+        if target == iterable[i]:  # if target is found, we update the target_index and
+            target_index = i       # break out of the loop
+            break
+
+    if target_index == 0:          # If the target value is at the first index, list modification is not required
+        return target_index, iterable
+
+    if target_index is None:       # If we didn't find the target value we return none along with the unmodified list
+        return None, iterable
+
+    # Move To Front
+    if method == 'mtf':            # If MTF(Move-To-Front) is selected, then we swap the first element of the
+        temp = iterable[0]         # list with the target value and return the modified list along with that target_index
+        iterable[0] = iterable[target_index]
+        iterable[target_index] = temp
+        return target_index, iterable
+
+    # Transpose
+    temp = iterable[target_index - 1] # For transpose, we swap the target value with its preceding value
+    iterable[target_index - 1] = iterable[target_index]   # and return the modified list along with that target_index
+    iterable[target_index] = temp
+    return target_index, iterable
+
+def Jump_Search(iterable: list[int | str], target: int | str):
+    # Check if the iterable is a list and contains sorted integers
+    if not isinstance(iterable, list):
+        warnings.warn(f"Iterable should be a list but provided {type(iterable).__name__}")
+        return None
+
+    # calculating the chunk size which us square root of the list length
+    chunk_size = int(math.sqrt(len(iterable)))
+
+    n = len(iterable)
+    prev = 0
+    current = chunk_size
+
+    # jump through the chunks
+    while current < n and iterable[current] < target:
+        prev = current
+        current += chunk_size
+
+    # then performing a linear search in the identified chunk
+    for i in range(prev, min(current, n)):
+        if iterable[i] == target:
+            return i  # returning the index if the target is found
+    # if target is not found
+    return None
 
 def ternary_search(elements, key):
     all_outcomes = {}
